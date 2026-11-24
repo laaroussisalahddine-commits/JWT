@@ -1,4 +1,5 @@
 """Etape 3 : modifier role=user en role=admin puis verifier la signature."""
+
 import base64
 import json
 from datetime import datetime, timedelta, timezone
@@ -15,7 +16,7 @@ payload = {
 token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 header, body, signature = token.split(".")
 
-print("=== ETAPE 3 : SIGNATURE ===")
+print("\n=== ETAPE 3 : SIGNATURE ===\n")
 try:
     original = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     print("Token original : ACCEPTE | role =", original["role"])
@@ -41,4 +42,3 @@ except jwt.InvalidSignatureError:
 except jwt.InvalidTokenError as exc:
     print("Token modifie : REFUSE |", type(exc).__name__)
 
-print("Question : pourquoi ne peut-on pas signer cette modification sans la cle ?")

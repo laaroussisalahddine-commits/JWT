@@ -1,4 +1,5 @@
 """Educational JWT demo (local only): generation, decoding, tampering, expiry."""
+
 import base64
 import json
 from datetime import datetime, timedelta, timezone
@@ -9,7 +10,6 @@ import jwt
 SECRET_KEY = "classroom-demo-key-not-for-production"
 ALGORITHM = "HS256"
 
-
 def decode_part(encoded: str) -> dict:
     padding = "=" * (-len(encoded) % 4)
     return json.loads(base64.urlsafe_b64decode(encoded + padding))
@@ -18,11 +18,6 @@ def decode_part(encoded: str) -> dict:
 def encode_part(data: dict) -> str:
     raw = json.dumps(data, separators=(",", ":")).encode("utf-8")
     return base64.urlsafe_b64encode(raw).rstrip(b"=").decode("ascii")
-
-
-def line() -> None:
-    print("\n" + "#" * 55 + "\n")
-
 
 def main() -> None:
     payload = {
@@ -33,22 +28,20 @@ def main() -> None:
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     header, body, signature = token.split(".")
 
-    print("=== ETAPE 1 : CREATION ===")
+    print("\n\n=== ETAPE 1 : CREATION ===")
     print("JWT :", token)
     print("HEADER :", header)
     print("PAYLOAD :", body)
     print("SIGNATURE :", signature)
-    line()
 
-    print("=== ETAPE 2 : DECODAGE SANS VERIFICATION ===")
+    print("\n\n=== ETAPE 2 : DECODAGE SANS VERIFICATION ===")
     decoded_header = decode_part(header)
     decoded_payload = decode_part(body)
     print("HEADER :", json.dumps(decoded_header, indent=2))
     print("PAYLOAD :", json.dumps(decoded_payload, indent=2))
     print("Attention : lire un payload ne prouve PAS sa validite.")
-    line()
 
-    print("=== ETAPE 3 : SIGNATURE ===")
+    print("\n\n=== ETAPE 3 : SIGNATURE ===")
     try:
         verified = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         print("Token original : ACCEPTE | role :", verified["role"])
@@ -66,9 +59,8 @@ def main() -> None:
         print("Token modifie : REFUSE (signature invalide)")
     except jwt.InvalidTokenError as exc:
         print("Token modifie : REFUSE |", type(exc).__name__)
-    line()
 
-    print("=== ETAPE 4 : EXPIRATION ===")
+    print("\n\n=== ETAPE 4 : EXPIRATION ===")
     expired = jwt.encode(
         {
             "sub": "student123",
