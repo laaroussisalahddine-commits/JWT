@@ -1,6 +1,6 @@
-# Sécurité des JWT — Démonstration + TP étudiant
+# Sécurité des JWT
 
-Mini-projet pédagogique pour un exposé Web Application Security (20 min).
+Mini-projet pédagogique pour un exposé Web Application Security .
 
 ## Objectifs
 - Comprendre Header, Payload, Signature d'un JWT signé (JWS).
@@ -14,12 +14,8 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
-Sur 1337, si le Nexus configuré ne fournit pas PyJWT et si la politique réseau le permet :
-```bash
-python -m pip install --index-url https://pypi.org/simple -r requirements.txt
-```
 
-## Démonstration professeur / présentateur
+## Démonstration 
 
 ### Scripts indépendants : une expérience à la fois
 ```bash
@@ -44,13 +40,10 @@ Lire `tp/ENONCE.md` et compléter `tp/starter.py`. Ne pas consulter `demo/` avan
 
 ## Documents
 - `docs/PLAN_PRESENTATION.md` : plan collectif + timing.
-- `docs/QUESTIONS_INTERACTIVES.md` : une question orale après chaque étape.
 - `tp/ENONCE.md` : consignes et critères de réussite.
-- `docs/CTF_BONUS.md` : challenge web officiel (optionnel).
 
 ## Sécurité et périmètre
 Ce dépôt est **uniquement éducatif**. La clé en clair sert à la démonstration et ne doit pas être reprise en production. Le TP modifie des tokens créés localement, sans attaquer de services tiers. En production : secret fort hors du code, algorithmes autorisés fixés côté serveur, HTTPS, validation de `exp`, `iss`, `aud` lorsque pertinents, autorisations côté serveur et stockage adapté.
 
 ## Ressources
 - [PyJWT : Usage Examples](https://pyjwt.readthedocs.io/en/stable/usage.html)
-- [PortSwigger : JWT attacks](https://portswigger.net/web-security/jwt)
