@@ -8,7 +8,7 @@ ALGORITHM = "HS256"
 # TODO 1: Create a signed token for sub='student01', role='user', exp in 2 minutes.
 token = None
 
-# TODO 2: Print the three encoded segments separated by dots.
+# TODO 2: Print the three encoded segments separated by dots "." .
 
 # TODO 3: Decode the header/payload without checking the signature. Explain the risk.
 # Tip: use base64.urlsafe_b64decode and json.loads, or PyJWT with verification disabled.

@@ -39,7 +39,6 @@ Les JWT non expirés durent 5 minutes ; chaque lancement en génère de nouveaux
 Lire `tp/ENONCE.md` et compléter `tp/starter.py`. Ne pas consulter `demo/` avant d'avoir tenté le TP.
 
 ## Documents
-- `docs/PLAN_PRESENTATION.md` : plan collectif + timing.
 - `tp/ENONCE.md` : consignes et critères de réussite.
 
 ## Sécurité et périmètre
