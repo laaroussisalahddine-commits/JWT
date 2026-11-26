@@ -29,4 +29,4 @@ def lire_base64url(partie):
 print("\n=== ETAPE 2 : DECODAGE SANS VERIFICATION ===\n")
 print("\nHEADER :", json.dumps(lire_base64url(header), indent=2))
 print("\nPAYLOAD :", json.dumps(lire_base64url(body), indent=2))
-print("\nATTENTION : decodage != verification de signature.\n")
+# print("\nATTENTION : decodage != verification de signature.\n")
