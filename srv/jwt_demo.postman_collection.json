@@ -1,0 +1,362 @@
+{
+  "info": {
+    "name": "Démo JWT locale",
+    "description": "Exécuter dans Postman Desktop avec le serveur Python actif sur 127.0.0.1:8000. Les requêtes de connexion enregistrent les jetons pour les requêtes suivantes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "aliceToken",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Connexion Alice · 200",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/login",
+        "auth": {
+          "type": "noauth"
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"alice-demo\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.unset('aliceToken');",
+              "if (pm.response.code === 200) {",
+              "    const token = pm.response.json().access_token;",
+              "    pm.test('JWT reçu', () => pm.expect(token).to.be.a('string').and.not.be.empty);",
+              "    pm.collectionVariables.set('aliceToken', token);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profil Alice · 200",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/profile",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{aliceToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('role = user', () => pm.expect(pm.response.json().role).to.equal('user'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accès admin avec Alice · 403",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/admin",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{aliceToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+              "pm.test('error = admin_required', () => pm.expect(pm.response.json().error).to.equal('admin_required'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Connexion Admin · 200",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/login",
+        "auth": {
+          "type": "noauth"
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin-demo\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.unset('adminToken');",
+              "if (pm.response.code === 200) {",
+              "    const token = pm.response.json().access_token;",
+              "    pm.test('JWT reçu', () => pm.expect(token).to.be.a('string').and.not.be.empty);",
+              "    pm.collectionVariables.set('adminToken', token);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accès admin avec Admin · 200",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/admin",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('role = admin', () => pm.expect(pm.response.json().role).to.equal('admin'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Liste des utilisateurs avec Admin · 200",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/users",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Liste des comptes de démonstration', () => pm.expect(pm.response.json().users).to.deep.equal([{ username: 'alice', role: 'user' }, { username: 'admin', role: 'admin' }]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Liste des utilisateurs avec Alice · 403",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/users",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{aliceToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+              "pm.test('error = admin_required', () => pm.expect(pm.response.json().error).to.equal('admin_required'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Liste des utilisateurs sans jeton · 401",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/users",
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+              "pm.test('error = missing_token', () => pm.expect(pm.response.json().error).to.equal('missing_token'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Connexion avec champ inattendu · 400",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/login",
+        "auth": {
+          "type": "noauth"
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"alice-demo\",\n  \"sadsad\": \"sadsa\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('error = invalid_login_request', () => pm.expect(pm.response.json().error).to.equal('invalid_login_request'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profil sans jeton · 401",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/profile",
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+              "pm.test('error = missing_token', () => pm.expect(pm.response.json().error).to.equal('missing_token'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profil avec jeton mal formé · 401",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/profile",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "invalid-token",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+              "pm.test('error = invalid_token', () => pm.expect(pm.response.json().error).to.equal('invalid_token'));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

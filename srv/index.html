@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Démo JWT</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: system-ui, sans-serif;
+      color: #182535;
+      background: #edf3f7;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { width: min(1050px, 100%); margin: auto; padding: clamp(1rem, 4vw, 3rem); }
+    h1 { font-size: clamp(2.1rem, 5vw, 3.7rem); margin: 0; letter-spacing: -.05em; }
+    h2 { font-size: 1.3rem; margin: 0 0 .8rem; }
+    h3 { font-size: .95rem; margin: 0 0 .4rem; }
+    p { margin: .5rem 0 1rem; line-height: 1.5; }
+    header { margin-bottom: 1.5rem; }
+    header p, .muted { color: #495d70; }
+    .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    section { min-width: 0; background: white; padding: 1.25rem; border: 1px solid #cad9e3; border-radius: .85rem; }
+    .token-panel { margin-top: 1rem; }
+    .parts { display: grid; gap: .8rem; grid-template-columns: 1fr 1.35fr 1fr; }
+    .parts > div { min-width: 0; }
+    .actions, .section-head { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+    .section-head { justify-content: space-between; margin-bottom: .6rem; }
+    .section-head h2 { margin: 0; }
+    button { padding: .6rem .8rem; border: 1px solid #9fb8c8; border-radius: .5rem; background: white; color: #163347; font: inherit; font-weight: 650; cursor: pointer; }
+    button:hover:not(:disabled) { background: #ecf5fa; }
+    button:focus-visible { outline: 3px solid #3976b2; outline-offset: 2px; }
+    button:disabled { opacity: .65; cursor: default; }
+    .primary { color: white; border-color: #155e68; background: #155e68; }
+    .primary:hover:not(:disabled) { background: #104a53; }
+    .endpoint-title { margin-top: 1.2rem; }
+    details { margin-bottom: .8rem; }
+    summary { cursor: pointer; }
+    details pre { display: inline-block; margin: .55rem .3rem 0 0; }
+    code, pre { font-family: ui-monospace, monospace; }
+    pre { margin: 0; padding: .75rem; background: #f0f5f8; border-radius: .5rem; font-size: .9rem; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+    #result[data-tone="ok"] { color: #185639; }
+    #result[data-tone="error"] { color: #941c2f; }
+    #copy-note { margin-bottom: 0; }
+    @media (max-width: 680px) { .columns, .parts { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Démo JWT</h1>
+      <p>Connectez-vous, inspectez le jeton et testez les droits d’accès sur l’API locale.</p>
+    </header>
+    <div class="columns">
+      <section aria-labelledby="requests-title">
+        <h2 id="requests-title">Requêtes API</h2>
+        <h3><code>POST /login</code></h3>
+        <div class="actions">
+          <button class="primary" type="button" data-account="alice">Connexion Alice</button>
+          <button type="button" data-account="admin">Connexion Admin</button>
+        </div>
+        <p id="account" class="muted" role="status">Aucun jeton actif.</p>
+        <h3 class="endpoint-title">Ressources protégées</h3>
+        <div class="actions">
+          <button type="button" data-path="/profile">GET /profile</button>
+          <button type="button" data-path="/admin">GET /admin</button>
+          <button type="button" data-path="/users">GET /users</button>
+          <button type="button" id="clear">Effacer le jeton</button>
+        </div>
+      </section>
+      <section aria-labelledby="response-title">
+        <h2 id="response-title">Dernière réponse</h2>
+        <div aria-live="polite" aria-atomic="true">
+          <p id="result" class="muted">En attente d’une requête.</p>
+          <pre id="response">{}</pre>
+        </div>
+      </section>
+    </div>
+    <section class="token-panel" aria-labelledby="slide-tests-title">
+      <h2 id="slide-tests-title">Étapes 5 à 7 de la diapositive</h2>
+      <details>
+        <summary>5 · Voir le changement de rôle dans le payload</summary>
+        <pre>Avant  {"role":"user"}</pre>
+        <pre>Après  {"role":"admin"}</pre>
+        <p class="muted">Exemple visuel. La signature doit correspondre au payload reçu.</p>
+      </details>
+      <div class="actions">
+        <button type="button" data-path="/admin" data-sample="invalid_signature">6 · Tester une signature invalide</button>
+        <button type="button" data-path="/profile" data-sample="expired_token">7 · Tester un JWT expiré</button>
+      </div>
+      <p class="muted">Le test 6 utilise un jeton signé avec une autre clé. Le test 7 utilise un jeton local déjà expiré.</p>
+    </section>
+    <section class="token-panel" aria-labelledby="token-title">
+      <div class="section-head">
+        <h2 id="token-title">Contenu du JWT</h2>
+        <button type="button" id="copy" disabled>Copier le JWT pour Postman</button>
+      </div>
+      <p class="muted">Le décodage affiche les données. L’API vérifie la signature à chaque requête protégée.</p>
+      <div class="parts">
+        <div><h3>Header</h3><pre id="header-value">—</pre></div>
+        <div><h3>Payload</h3><pre id="payload-value">—</pre></div>
+        <div><h3>Signature</h3><pre id="signature-value">—</pre></div>
+      </div>
+      <p id="copy-note" class="muted" role="status" hidden></p>
+    </section>
+  </main>
+  <script>
+    const byId = (id) => document.getElementById(id);
+    const requestButtons = document.querySelectorAll("[data-account], [data-path], #clear");
+    let token = "";
+
+    function decodeSegment(segment) {
+      const base64 = segment.replace(/-/g, "+").replace(/_/g, "/");
+      const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+      return JSON.parse(new TextDecoder().decode(bytes));
+    }
+
+    function setToken(nextToken, username = "") {
+      token = nextToken;
+      byId("copy").disabled = !token;
+      byId("copy-note").hidden = true;
+      byId("account").textContent = username ? "Jeton actif pour " + username + "." : "Aucun jeton actif.";
+      const [header, payload, signature] = token.split(".");
+      byId("header-value").textContent = token ? JSON.stringify(decodeSegment(header), null, 2) : "—";
+      byId("payload-value").textContent = token ? JSON.stringify(decodeSegment(payload), null, 2) : "—";
+      byId("signature-value").textContent = signature || "—";
+    }
+
+    async function send(path, { username = "", sample = "" } = {}) {
+      const method = username ? "POST" : "GET";
+      const result = byId("result");
+      const options = { method, headers: {} };
+      if (username) {
+        options.headers["Content-Type"] = "application/json";
+        options.body = JSON.stringify({ username, password: username + "-demo" });
+      }
+      requestButtons.forEach((button) => { button.disabled = true; });
+      result.textContent = method + " " + path + " en cours…";
+      result.removeAttribute("data-tone");
+      byId("response").textContent = "";
+      try {
+        if (!username) {
+          let bearer = token;
+          if (sample) {
+            const samples = await fetch("/demo/samples");
+            if (!samples.ok) throw new Error("Exemples indisponibles");
+            bearer = (await samples.json())[sample];
+          }
+          if (bearer) options.headers.Authorization = "Bearer " + bearer;
+        }
+        const response = await fetch(path, options);
+        const body = await response.json();
+        if (username && response.ok) setToken(body.access_token, username);
+        result.textContent = method + " " + path + " · " + response.status + " " + response.statusText;
+        result.dataset.tone = response.ok ? "ok" : "error";
+        byId("response").textContent = JSON.stringify(body, null, 2);
+      } catch {
+        result.textContent = "Impossible de lire la réponse de l’API locale.";
+        result.dataset.tone = "error";
+      } finally {
+        requestButtons.forEach((button) => { button.disabled = false; });
+      }
+    }
+
+    document.querySelectorAll("[data-account]").forEach((button) => {
+      button.addEventListener("click", () => send("/login", { username: button.dataset.account }));
+    });
+    document.querySelectorAll("[data-path]").forEach((button) => {
+      button.addEventListener("click", () => send(button.dataset.path, { sample: button.dataset.sample }));
+    });
+    byId("clear").addEventListener("click", () => setToken(""));
+    byId("copy").addEventListener("click", async () => {
+      const note = byId("copy-note");
+      try {
+        await navigator.clipboard.writeText(token);
+        note.textContent = "JWT copié.";
+      } catch {
+        note.textContent = "Copiez access_token depuis la réponse de connexion.";
+      }
+      note.hidden = false;
+    });
+  </script>
+</body>
+</html>
