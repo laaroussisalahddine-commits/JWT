@@ -3,7 +3,7 @@
 ## Démo automatique pour la dernière diapositive
 
 ```bash
-cd "/home/laaroussidin/Desktop/EST/jwt_demo"
+cd "/home/laaroussidin/Desktop/EST/JWT/srv"
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 .venv/bin/python jwt_demo.py demo
@@ -60,3 +60,14 @@ Pour tester l’expiration avec le navigateur ou Postman, se connecter, laisser 
 Le serveur écoute uniquement sur `127.0.0.1`. Chaque démarrage génère une nouvelle clé de signature. Les comptes et leurs mots de passe sont des exemples pour la démonstration.
 
 [Documentation PyJWT sur la vérification des jetons](https://pyjwt.readthedocs.io/en/stable/api.html)
+
+
+
+`How to run`: cd ~/Desktop/EST/JWT/srv
+.venv/bin/python jwt_demo.py serve
+
+
+`how to run in windows` : cd .\srv
+py -m venv .venv-win
+.\.venv-win\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv-win\Scripts\python.exe jwt_demo.py serve
